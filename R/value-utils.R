@@ -1,12 +1,12 @@
-#' input is null or empty string
+#' input is null, na, or empty string
 #'
 #' @param input
 #'
 #' @returns bool
 #' @export
 #'
-#' @examples isStringBlank(aaa)
-isStringBlank <- function(input) {
+#' @examples isValueEmpty(x)
+isValueEmpty <- function(input) {
   if (is.null(input)) {
     return(TRUE)
   }
