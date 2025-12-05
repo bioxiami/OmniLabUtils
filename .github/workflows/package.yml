@@ -13,23 +13,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up R
+      - name: Setup R
         uses: r-lib/actions/setup-r@v2
 
-      - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
 
-      - name: Document (roxygen2)
+      - name: Install R dependencies
+        run: |
+          Rscript -e "install.packages(c('devtools', 'roxygen2', 'rcmdcheck'), repos='https://cloud.r-project.org')"
+
+      - name: Generate documentation
         run: |
           Rscript -e "devtools::document()"
 
-      - name: Check
+      - name: Run R CMD check
         run: |
-          R CMD check --no-manual --no-build-vignettes .
+          Rscript -e "rcmdcheck::rcmdcheck('.', error_on='error', args='--no-manual')"
 
-      - name: Build tar.gz
+      - name: Build package
         run: |
           R CMD build .
 
@@ -38,3 +45,9 @@ jobs:
         with:
           name: r-package
           path: "*.tar.gz"
+
+      - name: Upload to GitHub Release (if tag)
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: "*.tar.gz"
